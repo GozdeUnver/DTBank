@@ -1,3 +1,4 @@
+from app import institutes
 import MySQLdb
 
 # To run the following script, you need to have an active MySQL server running locally. 
@@ -7,7 +8,9 @@ import MySQLdb
 con = MySQLdb.connect('localhost', 'root', 'group4','dtbank')
 cur = con.cursor()
 # Following code creates the refined tables
+
 cur.execute("CREATE TABLE User( \
+    name VARCHAR(30), \
     username VARCHAR(30), \
     institute VARCHAR(100), \
     password CHAR(64), \
@@ -29,8 +32,7 @@ cur.execute("CREATE TABLE Drug( \
     description TEXT, \
     smiles VARCHAR(200), \
     PRIMARY KEY(drugbank_id), \
-    UNIQUE(name), \
-    UNIQUE(smiles))")
+    UNIQUE(name))")
 
 
 cur.execute("CREATE TABLE Interacts ( \
@@ -53,6 +55,10 @@ cur.execute("CREATE TABLE DrugCausedSideEffect( \
     FOREIGN KEY (drugbank_id) REFERENCES Drug(drugbank_id) ON DELETE CASCADE ON UPDATE CASCADE, \
     FOREIGN KEY (umls_cui) REFERENCES SideEffectName(umls_cui) ON DELETE CASCADE ON UPDATE CASCADE)")
 
+cur.execute("CREATE TABLE Points( \
+    institute VARCHAR(100), \
+    score INTEGER, \
+    PRIMARY KEY (institute))")
 
 cur.execute("CREATE TABLE Bindings( \
     reaction_id INTEGER, \
@@ -65,7 +71,8 @@ cur.execute("CREATE TABLE Bindings( \
     institute VARCHAR(100), \
     PRIMARY KEY(reaction_id), \
     FOREIGN KEY (drugbank_id) REFERENCES Drug(drugbank_id) ON DELETE CASCADE ON UPDATE CASCADE, \
-    FOREIGN KEY (uniprot_id) REFERENCES UniProt(uniprot_id) ON DELETE CASCADE ON UPDATE CASCADE)")
+    FOREIGN KEY (uniprot_id) REFERENCES UniProt(uniprot_id) ON DELETE CASCADE ON UPDATE CASCADE, \
+    FOREIGN KEY (institute) REFERENCES Points(institute) ON DELETE CASCADE ON UPDATE CASCADE)")
 
 cur.execute("CREATE TABLE Contributors( \
     reaction_id INTEGER, \
@@ -75,10 +82,6 @@ cur.execute("CREATE TABLE Contributors( \
     FOREIGN KEY (reaction_id) REFERENCES Bindings(reaction_id) ON DELETE CASCADE ON UPDATE CASCADE, \
     FOREIGN KEY (username, institute) REFERENCES User(username, institute) ON DELETE CASCADE ON UPDATE CASCADE)")
 
-cur.execute("CREATE TABLE Points( \
-    institute VARCHAR(100), \
-    score INTEGER, \
-    PRIMARY KEY (institute))")
 
 
 # To do 1: Add the triggers
@@ -90,48 +93,63 @@ cur.execute(
     "delete from DrugCausedSideEffect S where S.drugbank_id=OLD.drugbank_id; \n "\
     "end \n " )
 
-cur.execute("delimiter // \
-    create trigger deleteprotein after delete on UniProt for each row \
-    begin \
-    delete from Bindings B where B.uniprot_id=OLD.uniprot_id; \
-    end// \
-    delimiter ;")
+cur.execute(
+    "create trigger deleteprotein after delete on UniProt for each row \n " \
+    "begin \n " \
+    "delete from Bindings B where B.uniprot_id=OLD.uniprot_id; \n " \
+    "end \n ")
 
-cur.execute("delimiter // \
-    create trigger addPoints2 after insert on Contributors for each row \
-    begin \
-    update Points P set P.score=P.score+2 where P.institute=NEW.institute; \
-    end// \
-    delimiter ;")
+cur.execute(
+    "create trigger addPoints2 before insert on Contributors for each row \n " \
+    "begin \n " \
+    "if NOT EXISTS (select username,institute from contributors where NEW.username=username AND NEW.institute=institute) then \n " \
+    "begin \n" \
+    "update Points P set P.score=P.score+2 where P.institute=NEW.institute; \n " \
+    "end; \n" \
+    "end if; \n " \
+    "end\n " )
 
-cur.execute("delimiter // \
-    create trigger deletePoints2 after delete on Contributors for each row \
-    begin \
-    update Points P set P.score=P.score-2 where P.institute=OLD.institute; \
-    end// \
-    delimiter ;")
+cur.execute(
+    "create trigger deletePoints2 after delete on Contributors for each row \n " \
+    "begin \n " \
+    "if NOT EXISTS (select username,institute from contributors where OLD.username=username AND OLD.institute=institute) then \n " \
+    "begin \n" \
+    "update Points P set P.score=P.score-2 where P.institute=OLD.institute; \n " \
+    "end; \n" \
+    "end if; \n " \
+    "end \n " )
 
-cur.execute("delimiter // \
-    create trigger addPoints5 after insert on Bindings for each row \
-    begin \
-    update Points P set P.score=P.score+5 where P.institute=NEW.institute; \
-    end// \
-    delimiter ;")
 
 # To do 2: Enforce the constraint that the DatabaseManager table can have at most 5 entries
-cur.execute("delimiter // \
-    create trigger limitDatabaseManager after insert on DatabaseManager for each row \
-    begin \
-    if (select count(*) from DatabaseManager)>5 then begin \
-    delete from DatabaseManager D where D.username=NEW.username; \
-    end; \
-    end if; \
-    end// \
-    delimiter ;")
+cur.execute(
+    "create trigger limitDatabaseManager after insert on DatabaseManager for each row \n " \
+    "begin \n " \
+    "if (select count(*) from DatabaseManager)>5 then begin \n " \
+    "delete from DatabaseManager D where D.username=NEW.username; \n " \
+    "end; \n " \
+    "end if; \n " \
+    "end\n " )
 
 
-# TODO: Trigger to add institute after adding new user
+cur.execute("CREATE TRIGGER addPoints5 before insert on Bindings for each row \n " \
+    "begin \n " \
+    "if NEW.doi NOT IN (select doi from Bindings) then \n" \
+    "begin \n"  \
+    "update Points P set P.score=P.score+5 where P.institute=NEW.institute; \n " \
+    "end; \n "\
+    "end if; \n" \
+    "end \n ")
+
 cur.execute("create trigger insertPoint after insert on User for each row \n " \
     "begin \n" \
-    "insert into Points values (NEW.institute,0); \n "\
+    "insert ignore into Points values (NEW.institute,0); \n "\
     "end \n ")
+
+
+cur.execute("CREATE PROCEDURE filterTargets (in Drugid CHAR(7), in Measurement VARCHAR(4),in Minval integer, in Maxval integer) \n" \
+    "begin \n" \
+    "SELECT uniprot_id,target_name FROM Bindings WHERE drugbank_id=Drugid AND measure=Measurement AND affinity_nM<=MaxVal AND affinity_nM>=Minval;\n" \
+    "end \n ")
+
+
+con.commit()
