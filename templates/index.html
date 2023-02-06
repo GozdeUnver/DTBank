@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+
+{% endblock %}
+
+
+{% block body %}
+<center>
+    <h1>Welcome to the DTBank App!</h1>
+    <form id='login-form' action="" method='post'>
+      <input type="text" placeholder="Username" name="Username" required>
+      <input type="password" placeholder="Password" name="Password" required><br>
+      <label for="Type">You are a</label>
+      <select id="Type" name="Type">
+        <option value="User" name="User">User</option>
+        <option value="Manager" name="Manager">Database Manager</option>
+      </select>
+      <button type='submit'>Login</button>
+    </form>
+</center>
+
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+
+{% endblock %}
+
+
+{% block body %}
+<center>
+    <h1>Welcome to DTBank!</h1>
+    <form id='login-form' action="" method='post'>
+      <input type="text" placeholder="Username" name="Username" required>
+      <input type="text" placeholder="Institute" name="Institute" required>
+      <input type="password" placeholder="Password" name="Password" required><br>
+      <button type='submit'>Add User</button>
+    </form>
+</center>
+
+
+{% endblock %}

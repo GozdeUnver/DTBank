@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+
+{% endblock %}
+
+
+{% block body %}
+<center>
+      <h1>Drugs</h1>
+      {{ rows }}
+      <table>
+          {% for row in rows %}
+          <tr>
+            {% for i in range(len(row)) %}
+            <td>{{ row[i]}}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+      </table>  
+</center>
+
+
+{% endblock %}

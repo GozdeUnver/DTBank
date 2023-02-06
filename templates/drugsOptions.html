@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<center><h1>Choose options</h1></center>
+{% endblock %}
+
+
+{% block body %}
+<br>
+<center>
+    <form action="/drugs/viewDrugs" method="get">
+        <button>View all information of drugs</button>
+    </form>
+    <br>
+    <form action="/drugs/viewDrugInteraction" method="get">
+        <button>View interactions of a drug</button>
+    </form>
+    <br>
+    <form action="/drugs/viewDrugSideEffect" method="get">
+        <button>View side effects of a drug</button>
+    </form>
+    <br>
+    <form action="/drugs/viewDrugTarget" method="get">
+        <button>View targets of a drug</button>
+    </form>
+</center>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+
+{% endblock %}
+
+
+{% block body %}
+<center>
+    <h3>Welcome, {{ username }}!</h3>
+        <div class="btn-group">
+            <form action="/drugs" method="get">
+                <button>Drugs</button>
+            </form>
+            <form action="/proteins" method="get">
+                <button>Proteins</button>
+            </form>
+            <form action="/sider" method="get">
+                <button>Side Effects</button>
+            </form>
+            <form action="/doi" method="get">
+                <button>DOI</button>
+            </form>
+            <form action="/institutes" method="get">
+                <button>Institutes</button>
+            </form>
+        </div>  
+</center>
+
+
+{% endblock %}

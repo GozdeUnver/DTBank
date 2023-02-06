@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+
+{% endblock %}
+
+
+{% block body %}
+<center>
+    <h3>Welcome, {{ username }}!</h3>
+        {% if added_user %} <h3>Successfully added user!</h3> {% endif %}
+        <div class="btn-group">
+            <form action="/adduser" method="get">
+                <button>Add User</button>
+            </form>
+            <form action="/affinity" method="get">
+                <button>Update Affinity Values</button>
+            </form>
+            <form action="/deletedrugs" method="get">
+                <button>Delete Drugs</button>
+            </form>
+            <form action="/deleteprot" method="get">
+                <button>Delete Proteins</button>
+            </form>
+            <form action="/updatecontrib" method="get">
+                <button>Update Contributors</button>
+            </form>
+        </div>  
+</center>
+
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+
+{% endblock %}
+
+
+{% block body %}
+<center>
+    <h1>Delete Drugs</h1>
+    {% if success is defined and success == True %} <h3>Drug Deleted Successfully!</h3> 
+    {% elif success is defined and success == False %} <h3>There is no drug with that id!</h3> 
+    {% endif %}
+    <form id='login-form' action="" method='post'>
+      <input type="text" placeholder="ID of the drug to delete" name="drugid" required>
+      <button type='submit'>Delete Drug</button>
+    </form>
+</center>
+
+
+{% endblock %}
